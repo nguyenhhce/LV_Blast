@@ -111,7 +111,8 @@ module Blast_top
    
     reg [8:0] push_query_count;
     reg [8:0] push_subject_count;   
-	 
+	reg       has_query;
+	reg       has_subject;
 	 //assign debug_status    = {idle,write_hit_score,read_subject,first_read_subject,state,finished, FIFO_empty,read_hit_score_pair, query_datastream_out, sub_datastream_out};
 	 assign debug_status    = {idle,write_hit_score,read_subject,first_read_subject,state,finished, FIFO_empty, num_HSP_out, num_HSP_read};
     assign memory_clken    = 1'b1;
@@ -198,26 +199,35 @@ module Blast_top
 
 
    always @(posedge clk) begin
-
+      if(reset) begin
+	     push_query_count    <= 0;
+		 has_query           <= 1'b1;
+		 push_subject_count  <= 8'b0;
+		 has_subject         <= 1'b0;
+		 query_enable        <= 1'b0;
+		 subject_enable      <= 1'b0;
+	  end
+	  else begin
 //read query
-      if(read_query) begin
-         query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
-         query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         push_query_count                                   <= 8'b0;
-			
-			//Binh added for debuging
-         query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
-         query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-         query_data_debug[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-		end
-      else begin
+		  if(read_query) begin
+			 query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
+			 query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 push_query_count                                   <= 8'b0;
+			 has_query                                          <= 1'b1;
+				
+				//Binh added for debuging
+			 query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
+			 query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data_debug[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			end
+		  else if (has_query) begin
          if(push_query_count  < 8'd128) begin
            query_datastream_in  <= query_data[2:0];
             query_enable        <= 1'b1;
@@ -226,54 +236,57 @@ module Blast_top
          end
          else begin
             query_enable        <= 1'b0;
+			has_query           <= 1'b0;
          end
 
       end 
 
 //read subject
-      if(read_subject) begin
-         if(first_read_subject) begin
-            if(read_subject_count == 1) begin
-                {subject_ID, subject_length}                        <= memory_readdata;
-            end
-				else if(read_subject_count > 1)begin
+		  if(read_subject) begin
+			 if(first_read_subject) begin
+				if(read_subject_count == 1) begin
+					{subject_ID, subject_length}                        <= memory_readdata;
+				end
+					else if(read_subject_count > 1)begin
+						subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
+						subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						
+						subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
+						subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+						subject_data_debug[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+					end
+			 end
+				else begin
 					subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
 					subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 					subject_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					
 					subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
 					subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 					subject_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-					subject_data_debug[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 				end
-         end
-			else begin
-				subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
-				subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-				subject_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-				subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
-				subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-				subject_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= subject_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-			end
-         push_subject_count                                      <= 8'b0;
+			 push_subject_count                                      <= 8'b0;
+			 has_subject                                             <= 1'b1;
+		  end
+		  else if(has_subject) begin
+			 if(push_subject_count < 7'd64) begin
+				subject_datastream_in <= subject_data[2:0];
+				subject_enable        <= 1'b1;
+				push_subject_count    <= push_subject_count + 1'b1;
+				subject_data          <= subject_data >> 3;
+			 end
+			 else begin
+				subject_enable        <= 1'b0;
+				has_subject           <= 1'b0;
+			 end
+		end 
       end
-      else begin
-         if(push_subject_count < 7'd64) begin
-            subject_datastream_in <= subject_data[2:0];
-            subject_enable        <= 1'b1;
-            push_subject_count    <= push_subject_count + 1'b1;
-            subject_data          <= subject_data >> 3;
-         end
-         else begin
-            subject_enable        <= 1'b0;
-         end
-      end 
-
    end
 
 
