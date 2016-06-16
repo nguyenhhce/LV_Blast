@@ -201,7 +201,7 @@ module Blast_top
    always @(posedge clk) begin
       if(reset) begin
 	     push_query_count    <= 0;
-		 has_query           <= 1'b1;
+		 has_query           <= 1'b0;
 		 push_subject_count  <= 8'b0;
 		 has_subject         <= 1'b0;
 		 query_enable        <= 1'b0;
