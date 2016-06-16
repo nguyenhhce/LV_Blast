@@ -113,6 +113,7 @@ module Blast_top
     reg [8:0] push_subject_count;   
 	reg       has_query;
 	reg       has_subject;
+	reg       reset_blast_array;
 	 //assign debug_status    = {idle,write_hit_score,read_subject,first_read_subject,state,finished, FIFO_empty,read_hit_score_pair, query_datastream_out, sub_datastream_out};
 	 assign debug_status    = {idle,write_hit_score,read_subject,first_read_subject,state,finished, FIFO_empty, num_HSP_out, num_HSP_read};
     assign memory_clken    = 1'b1;
@@ -197,6 +198,13 @@ module Blast_top
       endcase
    end
 
+//reset signal for Blast_array
+   always @(posedge clk) begin
+       if(app_ready && (app_code == READ_QUERY_CODE)) 
+	       reset_blast_array = 1'b1;
+	   else 
+	       reset_blast_array = 1'b0;
+   end
 
    always @(posedge clk) begin
       if(reset) begin
@@ -361,7 +369,7 @@ module Blast_top
 		.query_enable(query_enable), 
 		.sub_enable(subject_enable), 
 //		.enable, 
-		.reset(reset), 
+		.reset(reset| reset_blast_array), 
 		.read_HSP(read_hit_score_pair),
 //		.Q_address_F, 
 //		.S_address_F, 
