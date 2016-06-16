@@ -45,3 +45,46 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+//Binh added to filter unnecessary files
+*.bsf
+*.cmp
+*.html
+*.sopcinfo
+*.asm
+*.rpt
+*.cdf
+*.done
+*.eda
+*.fit
+*.smsg
+*.summary
+*.flow
+*.jdi
+*.map
+*.pin
+*.qws
+*.sta
+*.qdf
+*.txt
+*.xml
+*.nlv
+*.db_info
+*.sld_design_entry
+*.sci
+*.debuginfo
+*.regmap
+*.autoh_e40e1
+*.ammdb
+*.cdb
+*.dfp
+*.hdb
+*.logdb
+*.rcfdb
+*.dpi
+*.kpt
+*.root_partition
+*.hbdb
+*.hb_info
+*.sig
+*.rrp
