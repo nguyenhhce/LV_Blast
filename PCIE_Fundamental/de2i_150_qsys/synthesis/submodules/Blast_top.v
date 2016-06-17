@@ -212,7 +212,7 @@ module Blast_top
 		  if(read_query) begin
 			 query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
 			 query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-			 query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
@@ -222,7 +222,7 @@ module Blast_top
 				//Binh added for debuging
 			 query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= memory_readdata;
 			 query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[5*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
-			 query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];         query_data[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
+			 query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[4*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[3*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[2*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
 			 query_data_debug[0*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH] <= query_data_debug[1*MEMORY_DATAWIDTH +: MEMORY_DATAWIDTH];
